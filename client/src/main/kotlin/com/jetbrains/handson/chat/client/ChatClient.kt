@@ -14,14 +14,12 @@ fun main() {
     }
     runBlocking {
         client.webSocket(method = HttpMethod.Get, host = "127.0.0.1", port = 8080, path = "/chat") {
-            while (true) {
-                val othersMessage = incoming.receive() as? Frame.Text ?: continue
-                print(othersMessage.readText())
-                val myMessage = readLine()
-                if (myMessage != null) {
-                    send(myMessage)
-                }
-            }
+          val messageOutputRoutine = launch { outputMessages() }
+          val userInputRoutine = launch { inputMessages() }
+
+
+            userInputRoutine.join()
+            messageOutputRoutine.cancelAndJoin()
         }
     }
     client.close()
